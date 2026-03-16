@@ -64,6 +64,7 @@ const FULL_PANELS: Record<string, PanelConfig> = {
 
 const FULL_MAP_LAYERS: MapLayers = {
   iranAttacks: _desktop ? false : true,
+  planeTest: false,
   gpsJamming: false,
   satellites: false,
 
@@ -122,6 +123,7 @@ const FULL_MAP_LAYERS: MapLayers = {
 
 const FULL_MOBILE_MAP_LAYERS: MapLayers = {
   iranAttacks: true,
+  planeTest: false,
   gpsJamming: false,
   satellites: false,
 
@@ -270,6 +272,7 @@ const TECH_MAP_LAYERS: MapLayers = {
   renewableInstallations: false,
   tradeRoutes: false,
   iranAttacks: false,
+  planeTest: false,
   ciiChoropleth: false,
   dayNight: false,
   // Commodity layers (disabled in tech variant)
@@ -328,6 +331,7 @@ const TECH_MOBILE_MAP_LAYERS: MapLayers = {
   renewableInstallations: false,
   tradeRoutes: false,
   iranAttacks: false,
+  planeTest: false,
   ciiChoropleth: false,
   dayNight: false,
   // Commodity layers (disabled in tech variant)
@@ -429,6 +433,7 @@ const FINANCE_MAP_LAYERS: MapLayers = {
   renewableInstallations: false,
   tradeRoutes: true,
   iranAttacks: false,
+  planeTest: false,
   ciiChoropleth: false,
   dayNight: false,
   // Commodity layers (disabled in finance variant)
@@ -487,6 +492,7 @@ const FINANCE_MOBILE_MAP_LAYERS: MapLayers = {
   renewableInstallations: false,
   tradeRoutes: false,
   iranAttacks: false,
+  planeTest: false,
   ciiChoropleth: false,
   dayNight: false,
   // Commodity layers (disabled in finance variant)
@@ -561,6 +567,7 @@ const HAPPY_MAP_LAYERS: MapLayers = {
   renewableInstallations: true,
   tradeRoutes: false,
   iranAttacks: false,
+  planeTest: false,
   ciiChoropleth: false,
   dayNight: false,
   // Commodity layers (disabled)
@@ -619,6 +626,7 @@ const HAPPY_MOBILE_MAP_LAYERS: MapLayers = {
   renewableInstallations: true,
   tradeRoutes: false,
   iranAttacks: false,
+  planeTest: false,
   ciiChoropleth: false,
   dayNight: false,
   // Commodity layers (disabled)
@@ -708,6 +716,7 @@ const COMMODITY_MAP_LAYERS: MapLayers = {
   renewableInstallations: false,
   tradeRoutes: true,
   iranAttacks: false,
+  planeTest: false,
   ciiChoropleth: false,
   dayNight: false,
   // Commodity layers (enabled)
@@ -766,6 +775,7 @@ const COMMODITY_MOBILE_MAP_LAYERS: MapLayers = {
   renewableInstallations: false,
   tradeRoutes: false,
   iranAttacks: false,
+  planeTest: false,
   ciiChoropleth: false,
   dayNight: false,
   // Commodity layers (limited on mobile)

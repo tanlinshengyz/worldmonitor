@@ -69,6 +69,7 @@ export const DEFAULT_MAP_LAYERS: MapLayers = {
   renewableInstallations: true,
   tradeRoutes: false,
   iranAttacks: false,
+  planeTest: false,
   ciiChoropleth: false,
   dayNight: false,
   // Commodity variant layers (disabled in happy variant)
@@ -128,6 +129,7 @@ export const MOBILE_DEFAULT_MAP_LAYERS: MapLayers = {
   renewableInstallations: true,
   tradeRoutes: false,
   iranAttacks: false,
+  planeTest: false,
   ciiChoropleth: false,
   dayNight: false,
   // Commodity variant layers (disabled in happy variant)

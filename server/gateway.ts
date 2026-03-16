@@ -94,6 +94,7 @@ const RPC_CACHE_TIER: Record<string, CacheTier> = {
   '/api/conflict/v1/list-ucdp-events': 'static',
   '/api/conflict/v1/get-humanitarian-summary': 'static',
   '/api/conflict/v1/list-iran-events': 'slow',
+  '/api/custom/v1/list-plane-test-points': 'fast',
   '/api/displacement/v1/get-displacement-summary': 'static',
   '/api/displacement/v1/get-population-exposure': 'static',
   '/api/economic/v1/get-bis-policy-rates': 'static',

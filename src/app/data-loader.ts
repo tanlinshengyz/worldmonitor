@@ -89,6 +89,7 @@ import { fetchSatelliteTLEs, initSatRecs, propagatePositions, startPropagationLo
 import type { SatRecEntry } from '@/services/satellites';
 import { dataFreshness, type DataSourceId } from '@/services/data-freshness';
 import { fetchConflictEvents, fetchUcdpClassifications, fetchHapiSummary, fetchUcdpEvents, deduplicateAgainstAcled, fetchIranEvents } from '@/services/conflict';
+import { fetchPlaneTestPoints } from '@/services/plane-test';
 import { fetchUnhcrPopulation } from '@/services/displacement';
 import { fetchClimateAnomalies } from '@/services/climate';
 import { fetchSecurityAdvisories } from '@/services/security-advisories';
@@ -429,6 +430,7 @@ export class DataLoaderManager implements AppModule {
     if (SITE_VARIANT !== 'happy' && this.ctx.mapLayers.flights) tasks.push({ name: 'flights', task: runGuarded('flights', () => this.loadFlightDelays()) });
     if (SITE_VARIANT !== 'happy' && CYBER_LAYER_ENABLED && this.ctx.mapLayers.cyberThreats) tasks.push({ name: 'cyberThreats', task: runGuarded('cyberThreats', () => this.loadCyberThreats()) });
     if (SITE_VARIANT !== 'happy' && !isDesktopRuntime()) tasks.push({ name: 'iranAttacks', task: runGuarded('iranAttacks', () => this.loadIranEvents()) });
+    if (this.ctx.mapLayers.planeTest) tasks.push({ name: 'planeTest', task: runGuarded('planeTest', () => this.loadPlaneTest()) });
     if (SITE_VARIANT !== 'happy' && (this.ctx.mapLayers.techEvents || SITE_VARIANT === 'tech')) tasks.push({ name: 'techEvents', task: runGuarded('techEvents', () => this.loadTechEvents()) });
     if (SITE_VARIANT !== 'happy' && this.ctx.mapLayers.satellites && this.ctx.map?.isGlobeMode?.()) tasks.push({ name: 'satellites', task: runGuarded('satellites', () => this.loadSatellites()) });
 
@@ -480,6 +482,9 @@ export class DataLoaderManager implements AppModule {
     this.ctx.inFlight.add(layer);
     this.ctx.map?.setLayerLoading(layer, true);
     try {
+      if (layer === 'planeTest') {
+        console.log('[loadDataForLayer] planeTest: loading...');
+      }
       switch (layer) {
         case 'natural':
           await this.loadNatural();
@@ -524,6 +529,9 @@ export class DataLoaderManager implements AppModule {
           break;
         case 'iranAttacks':
           await this.loadIranEvents();
+          break;
+        case 'planeTest':
+          await this.loadPlaneTest();
           break;
         case 'satellites':
           await this.loadSatellites();
@@ -1779,6 +1787,16 @@ export class DataLoaderManager implements AppModule {
       this.refreshCiiAndBrief();
     } catch {
       this.ctx.map?.setLayerReady('iranAttacks', false);
+    }
+  }
+
+  async loadPlaneTest(): Promise<void> {
+    try {
+      const points = await fetchPlaneTestPoints();
+      this.ctx.map?.setPlaneTestData(points);
+      this.ctx.map?.setLayerReady('planeTest', points.length > 0);
+    } catch {
+      this.ctx.map?.setLayerReady('planeTest', false);
     }
   }
 

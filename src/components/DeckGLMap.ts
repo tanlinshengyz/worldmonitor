@@ -40,6 +40,7 @@ import { fetchMilitaryBases, type MilitaryBaseCluster as ServerBaseCluster } fro
 import type { AirportDelayAlert, PositionSample } from '@/services/aviation';
 import { fetchAircraftPositions } from '@/services/aviation';
 import { type IranEvent, getIranEventColor, getIranEventRadius } from '@/services/conflict';
+import type { PlaneTestPoint } from '@/services/plane-test';
 import type { GpsJamHex } from '@/services/gps-interference';
 import type { DisplacementFlow } from '@/services/displacement';
 import type { Earthquake } from '@/services/earthquakes';
@@ -297,6 +298,7 @@ export class DeckGLMap {
   private outages: InternetOutage[] = [];
   private cyberThreats: CyberThreat[] = [];
   private iranEvents: IranEvent[] = [];
+  private planeTestPoints: PlaneTestPoint[] = [];
   private aisDisruptions: AisDisruptionEvent[] = [];
   private aisDensity: AisDensityZone[] = [];
   private cableAdvisories: CableAdvisory[] = [];
@@ -1260,6 +1262,11 @@ export class DeckGLMap {
       layers.push(this.createGhostLayer('iran-events-layer', this.iranEvents, d => [d.longitude, d.latitude], { radiusMinPixels: 12 }));
     }
 
+    // Plane test layer (custom plane.json)
+    if (mapLayers.planeTest && this.planeTestPoints.length > 0) {
+      layers.push(this.createPlaneTestLayer());
+    }
+
     // Weather alerts layer
     if (mapLayers.weather && filteredWeatherAlerts.length > 0) {
       layers.push(this.createWeatherLayer(filteredWeatherAlerts));
@@ -1915,6 +1922,19 @@ export class DeckGLMap {
       getFillColor: (d: IranEvent) => getIranEventColor(d),
       radiusMinPixels: 4,
       radiusMaxPixels: 16,
+      pickable: true,
+    });
+  }
+
+  private createPlaneTestLayer(): ScatterplotLayer {
+    return new ScatterplotLayer({
+      id: 'plane-test-layer',
+      data: this.planeTestPoints,
+      getPosition: (d: PlaneTestPoint) => [d.longitude, d.latitude],
+      getRadius: 80000,
+      getFillColor: [100, 180, 255, 220],
+      radiusMinPixels: 6,
+      radiusMaxPixels: 14,
       pickable: true,
     });
   }
@@ -3190,6 +3210,8 @@ export class DeckGLMap {
         return { html: `<div class="deckgl-tooltip"><strong>${t('popups.cyberThreat.title')}</strong><br/>${text(obj.severity || t('components.deckgl.tooltip.medium'))} · ${text(obj.country || t('popups.unknown'))}</div>` };
       case 'iran-events-layer':
         return { html: `<div class="deckgl-tooltip"><strong>${t('components.deckgl.layers.iranAttacks')}: ${text(obj.category || '')}</strong><br/>${text((obj.title || '').slice(0, 80))}</div>` };
+      case 'plane-test-layer':
+        return { html: `<div class="deckgl-tooltip"><strong>${t('components.deckgl.layers.planeTest')}</strong><br/>${text(obj.name || obj.id || '')}${obj.type ? `<br/>${text(obj.type)}` : ''}</div>` };
       case 'news-locations-layer':
         return { html: `<div class="deckgl-tooltip"><strong>📰 ${t('components.deckgl.tooltip.news')}</strong><br/>${text(obj.title?.slice(0, 80) || '')}</div>` };
       case 'positive-events-layer': {
@@ -4277,6 +4299,11 @@ export class DeckGLMap {
 
   public setIranEvents(events: IranEvent[]): void {
     this.iranEvents = events;
+    this.render();
+  }
+
+  public setPlaneTestData(points: PlaneTestPoint[]): void {
+    this.planeTestPoints = points;
     this.render();
   }
 

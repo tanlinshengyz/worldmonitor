@@ -41,6 +41,7 @@ import type { RenewableInstallation } from '@/services/renewable-installations';
 import type { GpsJamHex } from '@/services/gps-interference';
 import type { SatellitePosition } from '@/services/satellites';
 import type { IranEvent } from '@/services/conflict';
+import type { PlaneTestPoint } from '@/services/plane-test';
 
 export type TimeRange = '1h' | '6h' | '24h' | '48h' | '7d' | 'all';
 export type MapView = 'global' | 'america' | 'mena' | 'eu' | 'asia' | 'latam' | 'africa' | 'oceania';
@@ -120,6 +121,7 @@ export class MapContainer {
   private cachedSatellites: SatellitePosition[] | null = null;
   private cachedCyberThreats: CyberThreat[] | null = null;
   private cachedIranEvents: IranEvent[] | null = null;
+  private cachedPlaneTestPoints: PlaneTestPoint[] | null = null;
   private cachedNewsLocations: NewsLocationMarker[] | null = null;
   private cachedPositiveEvents: PositiveGeoEvent[] | null = null;
   private cachedKindnessData: KindnessPoint[] | null = null;
@@ -281,6 +283,7 @@ export class MapContainer {
     if (this.cachedSatellites) this.setSatellites(this.cachedSatellites);
     if (this.cachedCyberThreats) this.setCyberThreats(this.cachedCyberThreats);
     if (this.cachedIranEvents) this.setIranEvents(this.cachedIranEvents);
+    if (this.cachedPlaneTestPoints) this.setPlaneTestData(this.cachedPlaneTestPoints);
     if (this.cachedNewsLocations) this.setNewsLocations(this.cachedNewsLocations);
     if (this.cachedPositiveEvents) this.setPositiveEvents(this.cachedPositiveEvents);
     if (this.cachedKindnessData) this.setKindnessData(this.cachedKindnessData);
@@ -557,6 +560,13 @@ export class MapContainer {
     } else {
       this.svgMap?.setIranEvents(events);
     }
+  }
+
+  public setPlaneTestData(points: PlaneTestPoint[]): void {
+    this.cachedPlaneTestPoints = points;
+    if (this.useGlobe) return; // GlobeMap does not implement plane test layer
+    if (this.useDeckGL) this.deckGLMap?.setPlaneTestData(points);
+    // SVG map does not implement plane test layer
   }
 
   public setNewsLocations(data: NewsLocationMarker[]): void {
@@ -916,6 +926,7 @@ export class MapContainer {
     this.cachedSatellites = null;
     this.cachedCyberThreats = null;
     this.cachedIranEvents = null;
+    this.cachedPlaneTestPoints = null;
     this.cachedNewsLocations = null;
     this.cachedPositiveEvents = null;
     this.cachedKindnessData = null;

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package worldmonitor.custom.v1;
+
+import "sebuf/http/annotations.proto";
+import "worldmonitor/custom/v1/list_plane_test_points.proto";
+
+// CustomService provides custom map layer APIs (e.g. plane test layer).
+service CustomService {
+  option (sebuf.http.service_config) = { base_path: "/api/custom/v1" };
+
+  // ListPlaneTestPoints fetches plane test points from the configured upstream (e.g. plane.json).
+  rpc ListPlaneTestPoints(ListPlaneTestPointsRequest) returns (ListPlaneTestPointsResponse) {
+    option (sebuf.http.config) = { path: "/list-plane-test-points", method: HTTP_METHOD_GET };
+  }
+}

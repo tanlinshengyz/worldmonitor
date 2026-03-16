@@ -940,6 +940,11 @@ export class EventHandlerManager implements AppModule {
         airlineIntel?.setLiveMode(enabled);
       }
 
+      if (layer === 'planeTest' && enabled) {
+        this.callbacks.loadDataForLayer('planeTest');
+        return;
+      }
+
       if (enabled) {
         this.callbacks.loadDataForLayer(layer);
       } else {

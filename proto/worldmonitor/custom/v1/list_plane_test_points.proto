@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package worldmonitor.custom.v1;
+
+// PlaneTestPoint represents a single point from the plane test layer (e.g. from plane.json).
+message PlaneTestPoint {
+  string id = 1;
+  double latitude = 2;
+  double longitude = 3;
+  string name = 4;
+  string type = 5;
+}
+
+message ListPlaneTestPointsRequest {}
+
+message ListPlaneTestPointsResponse {
+  repeated PlaneTestPoint points = 1;
+}

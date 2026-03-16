@@ -26,6 +26,7 @@ const def = (
 
 export const LAYER_REGISTRY: Record<keyof MapLayers, LayerDefinition> = {
   iranAttacks:              def('iranAttacks',              '&#127919;', 'iranAttacks',              'Iran Attacks', ['flat', 'globe'], _desktop ? 'locked' : undefined),
+  planeTest:                def('planeTest',                '&#9992;',   'planeTest',                '飞机测试'),
   hotspots:                 def('hotspots',                 '&#127919;', 'intelHotspots',            'Intel Hotspots'),
   conflicts:                def('conflicts',                '&#9876;',   'conflictZones',            'Conflict Zones'),
 
@@ -79,7 +80,7 @@ export const LAYER_REGISTRY: Record<keyof MapLayers, LayerDefinition> = {
 
 const VARIANT_LAYER_ORDER: Record<MapVariant, Array<keyof MapLayers>> = {
   full: [
-    'iranAttacks', 'hotspots', 'conflicts',
+    'iranAttacks', 'planeTest', 'hotspots', 'conflicts',
     'bases', 'nuclear', 'irradiators', 'spaceports',
     'cables', 'pipelines', 'datacenters', 'military',
     'ais', 'tradeRoutes', 'flights', 'protests',

@@ -27,6 +27,8 @@
     "typecheck:all": "tsc --noEmit && tsc --noEmit -p tsconfig.api.json",
     "tauri": "tauri",
     "preview": "vite preview",
+    "serve:plane-json": "node scripts/serve-plane-json.mjs",
+    "verify:plane-layer": "node scripts/verify-plane-layer.mjs",
     "test:e2e:full": "cross-env VITE_VARIANT=full playwright test",
     "test:e2e:tech": "cross-env VITE_VARIANT=tech playwright test",
     "test:e2e:finance": "cross-env VITE_VARIANT=finance playwright test",
@@ -109,6 +111,7 @@
     "satellite.js": "^6.0.2",
     "supercluster": "^8.0.1",
     "telegram": "^2.26.22",
+    "three": "^0.183.2",
     "topojson-client": "^3.1.0",
     "ws": "^8.19.0",
     "youtubei.js": "^16.0.1"

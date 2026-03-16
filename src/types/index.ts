@@ -551,6 +551,8 @@ export interface MapLayers {
   tradeRoutes: boolean;
   // Iran attacks layer
   iranAttacks: boolean;
+  // Plane test layer (custom plane.json)
+  planeTest: boolean;
   // GPS/GNSS interference layer
   gpsJamming: boolean;
   // Satellite orbital tracking

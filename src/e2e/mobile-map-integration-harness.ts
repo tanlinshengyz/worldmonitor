@@ -129,7 +129,7 @@ const layers = {
   renewableInstallations: false,
   tradeRoutes: false,
   iranAttacks: false,
-
+  planeTest: false,
   ciiChoropleth: false,
   dayNight: false,
   miningSites: false,
