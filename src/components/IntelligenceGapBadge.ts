@@ -220,11 +220,11 @@ export class IntelligenceFindingsBadge {
   }
 
   private mount(): void {
-    const headerRight = document.querySelector('.header-right');
-    if (headerRight) {
-      this.badge.appendChild(this.dropdown);
-      headerRight.insertBefore(this.badge, headerRight.firstChild);
-    }
+    // const headerRight = document.querySelector('.header-right');
+    // if (headerRight) {
+    //   this.badge.appendChild(this.dropdown);
+    //   headerRight.insertBefore(this.badge, headerRight.firstChild);
+    // }
   }
 
   private startRefresh(): void {

@@ -761,10 +761,9 @@ export class EventHandlerManager implements AppModule {
     if (SITE_VARIANT === 'tech' || SITE_VARIANT === 'finance' || SITE_VARIANT === 'happy') return;
 
     this.ctx.pizzintIndicator = new PizzIntIndicator();
-    const headerLeft = this.ctx.container.querySelector('.header-left');
-    if (headerLeft) {
-      headerLeft.appendChild(this.ctx.pizzintIndicator.getElement());
-    }
+    // 不再挂到头部，避免显示 DEFCON/PizzINT 指示器
+    // const headerLeft = this.ctx.container.querySelector('.header-left');
+    // if (headerLeft) headerLeft.appendChild(this.ctx.pizzintIndicator.getElement());
   }
 
   setupExportPanel(): void {
@@ -775,10 +774,10 @@ export class EventHandlerManager implements AppModule {
       timestamp: Date.now(),
     }));
 
-    const headerRight = this.ctx.container.querySelector('.header-right');
-    if (headerRight) {
-      headerRight.insertBefore(this.ctx.exportPanel.getElement(), headerRight.firstChild);
-    }
+    // const headerRight = this.ctx.container.querySelector('.header-right');
+    // if (headerRight) {
+    //   headerRight.insertBefore(this.ctx.exportPanel.getElement(), headerRight.firstChild);
+    // }
   }
 
   setupUnifiedSettings(): void {
@@ -856,10 +855,10 @@ export class EventHandlerManager implements AppModule {
       }
     });
 
-    const headerRight = this.ctx.container.querySelector('.header-right');
-    if (headerRight) {
-      headerRight.insertBefore(this.ctx.playbackControl.getElement(), headerRight.firstChild);
-    }
+    // const headerRight = this.ctx.container.querySelector('.header-right');
+    // if (headerRight) {
+    //   headerRight.insertBefore(this.ctx.playbackControl.getElement(), headerRight.firstChild);
+    // }
   }
 
   setupSnapshotSaving(): void {
