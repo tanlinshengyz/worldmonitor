@@ -21,7 +21,7 @@ import { INTEL_HOTSPOTS, CONFLICT_ZONES, MILITARY_BASES, NUCLEAR_FACILITIES, SPA
 import { PIPELINES } from '@/config/pipelines';
 import { t } from '@/services/i18n';
 import { SITE_VARIANT } from '@/config/variant';
-import { getGlobeRenderScale, resolveGlobePixelRatio, resolvePerformanceProfile, subscribeGlobeRenderScaleChange, getGlobeTexture, GLOBE_TEXTURE_URLS, subscribeGlobeTextureChange, getGlobeVisualPreset, subscribeGlobeVisualPresetChange, type GlobeRenderScale, type GlobePerformanceProfile, type GlobeVisualPreset } from '@/services/globe-render-settings';
+import { getGlobeRenderScale, resolveGlobePixelRatio, resolvePerformanceProfile, subscribeGlobeRenderScaleChange, getGlobeTexture, GLOBE_TEXTURE_URLS, subscribeGlobeTextureChange, getGlobeAttributionForTexture, getGlobeVisualPreset, subscribeGlobeVisualPresetChange, type GlobeRenderScale, type GlobePerformanceProfile, type GlobeVisualPreset } from '@/services/globe-render-settings';
 import { getLayersForVariant, resolveLayerLabel, type MapVariant } from '@/config/map-layer-definitions';
 import { getSecretState } from '@/services/runtime-config';
 import { resolveTradeRouteSegments, type TradeRouteSegment } from '@/config/trade-routes';
@@ -516,10 +516,10 @@ export class GlobeMap {
         'position:absolute;top:0;left:0;width:100% !important;height:100% !important;';
     }
 
-    // Globe attribution (texture + OpenStreetMap data)
+    // Globe attribution (by texture: ESRI 影像 / NASA / OSM)
     const attribution = document.createElement('div');
     attribution.className = 'map-attribution';
-    attribution.innerHTML = '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> © <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener">Natural Earth</a>';
+    attribution.innerHTML = getGlobeAttributionForTexture(initialTexture);
     this.container.appendChild(attribution);
 
     // Upgrade material to MeshStandardMaterial + add scene enhancements
@@ -536,9 +536,11 @@ export class GlobeMap {
       this.applyVisualPreset(preset);
     });
 
-    // Subscribe to texture changes (kept as-is)
+    // Subscribe to texture changes: update globe image and attribution
     this.unsubscribeGlobeTexture = subscribeGlobeTextureChange((texture) => {
       if (this.globe) this.globe.globeImageUrl(GLOBE_TEXTURE_URLS[texture]);
+      const attr = this.container.querySelector('.map-attribution');
+      if (attr) attr.innerHTML = getGlobeAttributionForTexture(texture);
     });
 
     // Pause auto-rotate on user interaction; resume after 60 s idle (like Sentinel)

@@ -44,7 +44,35 @@ export function buildPMTilesStyle(flavor: PMTilesTheme): StyleSpecification | nu
 export const FALLBACK_DARK_STYLE = 'https://tiles.openfreemap.org/styles/dark';
 export const FALLBACK_LIGHT_STYLE = 'https://tiles.openfreemap.org/styles/positron';
 
-export type MapProvider = 'auto' | 'pmtiles' | 'openfreemap' | 'carto';
+/** ESRI World Imagery 影像底图（默认） */
+const ESRI_WORLD_IMAGERY_TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const ESRI_IMAGERY_ATTRIBUTION = 'Esri, Maxar, Earthstar Geographics, and the GIS User Community';
+
+export function buildESRIImageryStyle(): StyleSpecification {
+  return {
+    version: 8,
+    glyphs: 'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf',
+    sources: {
+      'esri-imagery': {
+        type: 'raster',
+        tiles: [ESRI_WORLD_IMAGERY_TILES],
+        tileSize: 256,
+        attribution: ESRI_IMAGERY_ATTRIBUTION,
+      },
+    },
+    layers: [
+      {
+        id: 'esri-imagery-layer',
+        type: 'raster',
+        source: 'esri-imagery',
+        minzoom: 0,
+        maxzoom: 22,
+      },
+    ],
+  };
+}
+
+export type MapProvider = 'esri' | 'auto' | 'pmtiles' | 'openfreemap' | 'carto';
 
 const STORAGE_KEY = 'wm-map-provider';
 const THEME_STORAGE_PREFIX = 'wm-map-theme:';
@@ -52,7 +80,9 @@ const THEME_STORAGE_PREFIX = 'wm-map-theme:';
 export { hasTilesUrl as hasPMTilesUrl };
 
 export const MAP_PROVIDER_OPTIONS: { value: MapProvider; label: string }[] = (() => {
-  const opts: { value: MapProvider; label: string }[] = [];
+  const opts: { value: MapProvider; label: string }[] = [
+    { value: 'esri', label: 'ESRI 影像 (World Imagery)' },
+  ];
   if (hasTilesUrl) {
     opts.push({ value: 'auto', label: 'Auto (PMTiles → OpenFreeMap fallback)' });
     opts.push({ value: 'pmtiles', label: 'PMTiles (self-hosted)' });
@@ -71,6 +101,7 @@ const PMTILES_THEMES: { value: string; label: string }[] = [
 ];
 
 export const MAP_THEME_OPTIONS: Record<MapProvider, { value: string; label: string }[]> = {
+  esri: [{ value: 'imagery', label: 'World Imagery' }],
   pmtiles: PMTILES_THEMES,
   auto: PMTILES_THEMES,
   openfreemap: [
@@ -85,6 +116,7 @@ export const MAP_THEME_OPTIONS: Record<MapProvider, { value: string; label: stri
 };
 
 const DEFAULT_THEME: Record<MapProvider, string> = {
+  esri: 'imagery',
   pmtiles: 'black',
   auto: 'black',
   openfreemap: 'dark',
@@ -93,13 +125,13 @@ const DEFAULT_THEME: Record<MapProvider, string> = {
 
 export function getMapProvider(): MapProvider {
   const stored = localStorage.getItem(STORAGE_KEY) as MapProvider | null;
-  if (stored) {
+  if (stored && MAP_PROVIDER_OPTIONS.some(o => o.value === stored)) {
     if (stored === 'pmtiles' || stored === 'auto') {
-      return hasTilesUrl ? stored : 'openfreemap';
+      return hasTilesUrl ? stored : 'esri';
     }
     return stored;
   }
-  return hasTilesUrl ? 'auto' : 'openfreemap';
+  return 'esri';
 }
 
 export function setMapProvider(provider: MapProvider): void {
@@ -117,6 +149,22 @@ export function setMapTheme(provider: MapProvider, theme: string): void {
   const options = MAP_THEME_OPTIONS[provider];
   if (!options.some(o => o.value === theme)) return;
   localStorage.setItem(THEME_STORAGE_PREFIX + provider, theme);
+}
+
+/** 返回当前底图提供方的 attribution HTML 片段 */
+export function getAttributionForProvider(provider: MapProvider): string {
+  switch (provider) {
+    case 'esri':
+      return '© <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, Maxar, Earthstar Geographics, and the GIS User Community';
+    case 'openfreemap':
+      return '© <a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+    case 'carto':
+      return '© <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+    case 'pmtiles':
+    case 'auto':
+    default:
+      return '© <a href="https://protomaps.com" target="_blank" rel="noopener">Protomaps</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+  }
 }
 
 export function isLightMapTheme(mapTheme: string): boolean {
@@ -141,6 +189,8 @@ function asPMTilesTheme(mapTheme: string): PMTilesTheme {
 export function getStyleForProvider(provider: MapProvider, mapTheme: string): StyleSpecification | string {
   const lightFallback = isLightMapTheme(mapTheme);
   switch (provider) {
+    case 'esri':
+      return buildESRIImageryStyle();
     case 'pmtiles': {
       const style = buildPMTilesStyle(asPMTilesTheme(mapTheme));
       if (style) return style;

@@ -7,7 +7,7 @@ import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { Layer, LayersList, PickingInfo } from '@deck.gl/core';
 import { GeoJsonLayer, ScatterplotLayer, PathLayer, IconLayer, TextLayer, PolygonLayer } from '@deck.gl/layers';
 import maplibregl from 'maplibre-gl';
-import { registerPMTilesProtocol, FALLBACK_DARK_STYLE, FALLBACK_LIGHT_STYLE, getMapProvider, getMapTheme, getStyleForProvider, isLightMapTheme } from '@/config/basemap';
+import { registerPMTilesProtocol, FALLBACK_DARK_STYLE, FALLBACK_LIGHT_STYLE, getMapProvider, getMapTheme, getStyleForProvider, getAttributionForProvider, isLightMapTheme } from '@/config/basemap';
 import Supercluster from 'supercluster';
 import type {
   MapLayers,
@@ -506,7 +506,7 @@ export class DeckGLMap {
     attribution.className = 'map-attribution';
     attribution.innerHTML = isHappyVariant
       ? '© <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
-      : '© <a href="https://protomaps.com" target="_blank" rel="noopener">Protomaps</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+      : getAttributionForProvider(getMapProvider());
     wrapper.appendChild(attribution);
 
     this.container.appendChild(wrapper);
@@ -531,7 +531,10 @@ export class DeckGLMap {
     if (!isHappyVariant && typeof primaryStyle === 'string' && !primaryStyle.includes('pmtiles')) {
       this.usedFallbackStyle = true;
       const attr = this.container.querySelector('.map-attribution');
-      if (attr) attr.innerHTML = '© <a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+      if (attr) attr.innerHTML = getAttributionForProvider('openfreemap');
+    } else if (!isHappyVariant) {
+      const attr = this.container.querySelector('.map-attribution');
+      if (attr) attr.innerHTML = getAttributionForProvider(initialProvider);
     }
 
     this.maplibreMap = new maplibregl.Map({
@@ -558,7 +561,7 @@ export class DeckGLMap {
       const fallback = isLightMapTheme(initialMapTheme) ? FALLBACK_LIGHT_STYLE : FALLBACK_DARK_STYLE;
       console.warn(`[DeckGLMap] Primary basemap failed, recreating with fallback: ${fallback}`);
       const attr = this.container.querySelector('.map-attribution');
-      if (attr) attr.innerHTML = '© <a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+      if (attr) attr.innerHTML = getAttributionForProvider('openfreemap');
       this.maplibreMap?.remove();
       this.maplibreMap = new maplibregl.Map({
         container: 'deckgl-basemap',
@@ -5054,6 +5057,8 @@ export class DeckGLMap {
         : getStyleForProvider(provider, mapTheme);
     this.maplibreMap.setStyle(style);
     this.countryGeoJsonLoaded = false;
+    const attr = this.container.querySelector('.map-attribution');
+    if (attr && !isHappyVariant) attr.innerHTML = getAttributionForProvider(provider);
     this.maplibreMap.once('style.load', () => {
       localizeMapLabels(this.maplibreMap);
       this.loadCountryBoundaries();
@@ -5061,7 +5066,7 @@ export class DeckGLMap {
       this.updateCountryLayerPaint(paintTheme);
       this.render();
     });
-    if (!isHappyVariant && provider !== 'openfreemap' && !this.usedFallbackStyle) {
+    if (!isHappyVariant && provider !== 'openfreemap' && provider !== 'esri' && !this.usedFallbackStyle) {
       this.monitorTileLoading(mapTheme);
     }
   }
@@ -5113,6 +5118,8 @@ export class DeckGLMap {
     this.usedFallbackStyle = true;
     const fallback = isLightMapTheme(mapTheme) ? FALLBACK_LIGHT_STYLE : FALLBACK_DARK_STYLE;
     console.warn(`[DeckGLMap] Basemap tiles failed, falling back to OpenFreeMap: ${fallback}`);
+    const attr = this.container.querySelector('.map-attribution');
+    if (attr) attr.innerHTML = getAttributionForProvider('openfreemap');
     this.maplibreMap.setStyle(fallback);
     this.countryGeoJsonLoaded = false;
     this.maplibreMap.once('style.load', () => {

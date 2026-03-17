@@ -1,5 +1,5 @@
 export type GlobeRenderScale = 'auto' | '1' | '1.5' | '2' | '3';
-export type GlobeTexture = 'topographic' | 'blue-marble';
+export type GlobeTexture = 'imagery' | 'topographic' | 'blue-marble';
 
 const STORAGE_KEY = 'wm-globe-render-scale';
 const EVENT_NAME = 'wm-globe-render-scale-changed';
@@ -75,11 +75,13 @@ export function resolvePerformanceProfile(scale: GlobeRenderScale): GlobePerform
 }
 
 export const GLOBE_TEXTURE_OPTIONS: { value: GlobeTexture; label: string }[] = [
+  { value: 'imagery', label: 'ESRI 影像 (World Imagery)' },
   { value: 'topographic', label: 'Topographic' },
   { value: 'blue-marble', label: 'Blue Marble (NASA)' },
 ];
 
 export const GLOBE_TEXTURE_URLS: Record<GlobeTexture, string> = {
+  'imagery': '/textures/earth-blue-marble.jpg',
   'topographic': '/textures/earth-topo-bathy.jpg',
   'blue-marble': '/textures/earth-blue-marble.jpg',
 };
@@ -87,14 +89,16 @@ export const GLOBE_TEXTURE_URLS: Record<GlobeTexture, string> = {
 export function getGlobeTexture(): GlobeTexture {
   try {
     const raw = localStorage.getItem(TEXTURE_STORAGE_KEY);
-    if (raw === 'topographic' || raw === 'blue-marble') return raw;
+    if (raw === 'imagery' || raw === 'topographic' || raw === 'blue-marble') return raw as GlobeTexture;
   } catch { /* ignore */ }
-  return 'topographic';
+  return 'imagery';
 }
 
 export function setGlobeTexture(texture: GlobeTexture): void {
-  try { localStorage.setItem(TEXTURE_STORAGE_KEY, texture); } catch { /* ignore */ }
-  window.dispatchEvent(new CustomEvent(TEXTURE_EVENT_NAME, { detail: { texture } }));
+  const valid: GlobeTexture[] = ['imagery', 'topographic', 'blue-marble'];
+  const safe = valid.includes(texture) ? texture : 'imagery';
+  try { localStorage.setItem(TEXTURE_STORAGE_KEY, safe); } catch { /* ignore */ }
+  window.dispatchEvent(new CustomEvent(TEXTURE_EVENT_NAME, { detail: { texture: safe } }));
 }
 
 export function subscribeGlobeTextureChange(cb: (texture: GlobeTexture) => void): () => void {
@@ -104,6 +108,19 @@ export function subscribeGlobeTextureChange(cb: (texture: GlobeTexture) => void)
   };
   window.addEventListener(TEXTURE_EVENT_NAME, handler);
   return () => window.removeEventListener(TEXTURE_EVENT_NAME, handler);
+}
+
+/** 按当前球体纹理返回版权 HTML */
+export function getGlobeAttributionForTexture(texture: GlobeTexture): string {
+  switch (texture) {
+    case 'imagery':
+      return '© <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, Maxar, Earthstar Geographics, and the GIS User Community';
+    case 'blue-marble':
+      return '© <a href="https://visibleearth.nasa.gov" target="_blank" rel="noopener">NASA Visible Earth</a>';
+    case 'topographic':
+    default:
+      return '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> © <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener">Natural Earth</a>';
+  }
 }
 
 // ─── Visual Preset (4 March classic vs 6 March enhanced) ─────────────────────
