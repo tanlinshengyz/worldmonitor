@@ -619,15 +619,16 @@ export class GlobeMap {
       .arcDashAnimateTime(5000)
       .arcLabel((d: TradeRouteSegment) => `${d.routeName} · ${d.volumeDesc}`);
 
-    // Path accessors — set once
+    // Path accessors — set once (guard against undefined d/path from globe.gl)
     (globe as any)
-      .pathPoints((d: GlobePath) => d.points)
+      .pathPoints((d: GlobePath) => d?.points ?? [])
       .pathPointLat((p: number[]) => p[1])
       .pathPointLng((p: number[]) => p[0])
       .pathPointAlt((p: number[], _idx: number, path: object) =>
-        (path as GlobePath).pathType === 'orbit' && p.length > 2 ? (p[2] ?? 0) / 6371 : 0
+        (path as GlobePath)?.pathType === 'orbit' && p?.length > 2 ? (p[2] ?? 0) / 6371 : 0
       )
       .pathColor((d: GlobePath) => {
+        if (!d?.pathType) return 'rgba(180,160,255,0.6)';
         if (d.pathType === 'orbit') {
           const colors: Record<string, string> = { CN: 'rgba(255,32,32,0.4)', RU: 'rgba(255,136,0,0.4)', US: 'rgba(68,136,255,0.4)', EU: 'rgba(68,204,68,0.4)' };
           return colors[d.country || ''] || 'rgba(200,200,255,0.3)';
@@ -641,11 +642,11 @@ export class GlobeMap {
         if (d.pathType === 'gas')   return 'rgba(80,220,120,0.6)';
         return 'rgba(180,160,255,0.6)';
       })
-      .pathStroke((d: GlobePath) => d.pathType === 'orbit' ? 0.3 : d.pathType === 'cable' ? 0.3 : 0.6)
-      .pathDashLength((d: GlobePath) => d.pathType === 'orbit' ? 0.4 : d.pathType === 'cable' ? 1 : 0.6)
-      .pathDashGap((d: GlobePath) => d.pathType === 'orbit' ? 0.15 : d.pathType === 'cable' ? 0 : 0.25)
-      .pathDashAnimateTime((d: GlobePath) => d.pathType === 'orbit' ? 0 : d.pathType === 'cable' ? 0 : 5000)
-      .pathLabel((d: GlobePath) => d.name);
+      .pathStroke((d: GlobePath) => d?.pathType === 'orbit' ? 0.3 : d?.pathType === 'cable' ? 0.3 : 0.6)
+      .pathDashLength((d: GlobePath) => d?.pathType === 'orbit' ? 0.4 : d?.pathType === 'cable' ? 1 : 0.6)
+      .pathDashGap((d: GlobePath) => d?.pathType === 'orbit' ? 0.15 : d?.pathType === 'cable' ? 0 : 0.25)
+      .pathDashAnimateTime((d: GlobePath) => d?.pathType === 'orbit' ? 0 : d?.pathType === 'cable' ? 0 : 5000)
+      .pathLabel((d: GlobePath) => d?.name ?? '');
 
     // Polygon accessors — set once
     (globe as any)
