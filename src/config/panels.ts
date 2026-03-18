@@ -11,7 +11,7 @@ const _desktop = isDesktopRuntime();
 // Panel order matters! First panels appear at top of grid.
 // Desired order: live-news, AI Insights, AI Strategic Posture, cii, strategic-risk, then rest
 const FULL_PANELS: Record<string, PanelConfig> = {
-  // map: { name: 'Global Map', enabled: true, priority: 1 },
+  // map: { name: 'Global Map', enabled: false, priority: 1 },
   'maritime-situation': { name: 'Maritime Situation Awareness', enabled: true, priority: 1 },
   'live-news': { name: 'Live News', enabled: true, priority: 1 },
   'live-webcams': { name: 'Live Webcams', enabled: true, priority: 1 },

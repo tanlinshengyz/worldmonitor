@@ -373,7 +373,7 @@ export class PanelLayoutManager implements AppModule {
   applyPanelSettings(): void {
     const mapConfig = this.ctx.panelSettings["map"];
     const maritimeConfig = this.ctx.panelSettings["maritime-situation"];
-    const mapEnabled = mapConfig?.enabled ?? true;
+    const mapEnabled = mapConfig?.enabled ?? false;
     const maritimeEnabled = maritimeConfig?.enabled ?? true;
 
     const mapSection = document.getElementById("mapSection");
