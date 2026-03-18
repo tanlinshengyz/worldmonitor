@@ -32,5 +32,5 @@ export function mountCommunityWidget(): void {
     dismiss();
   });
 
-  document.body.appendChild(widget);
+  // document.body.appendChild(widget);
 }

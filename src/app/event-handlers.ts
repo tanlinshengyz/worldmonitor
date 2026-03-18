@@ -746,8 +746,17 @@ export class EventHandlerManager implements AppModule {
   startHeaderClock(): void {
     const el = document.getElementById('headerClock');
     if (!el) return;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const BEIJING_OFFSET_MS = 8 * 60 * 60 * 1000;
     const tick = () => {
-      el.textContent = new Date().toUTCString().replace('GMT', 'UTC');
+      const d = new Date(Date.now() + BEIJING_OFFSET_MS);
+      const y = d.getUTCFullYear();
+      const M = pad(d.getUTCMonth() + 1);
+      const day = pad(d.getUTCDate());
+      const h = pad(d.getUTCHours());
+      const m = pad(d.getUTCMinutes());
+      const s = pad(d.getUTCSeconds());
+      el.textContent = `${y}-${M}-${day} ${h}:${m}:${s}`;
     };
     tick();
     this.clockIntervalId = setInterval(tick, 1000);

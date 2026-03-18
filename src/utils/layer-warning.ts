@@ -25,7 +25,7 @@ export function showLayerWarning(threshold: number): void {
         <p>${t('components.deckgl.layerWarningBody', { threshold })}</p>
       </div>
       <label class="layer-warn-dismiss">
-        <input type="checkbox" />
+        <input type="checkbox" checked />
         <span>${t('components.deckgl.layerWarningDismiss')}</span>
       </label>
       <button class="layer-warn-ok">${t('components.deckgl.layerWarningOk')}</button>
