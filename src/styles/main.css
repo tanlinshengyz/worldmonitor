@@ -3643,6 +3643,76 @@ body.playback-mode .status-dot {
   display: none;
 }
 
+/* 未勾选全球态势时，溟坤海域态势占据 map-section 位置（同大小、同占比） */
+.map-section-maritime-takeover {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
+.map-section-maritime-takeover.hidden {
+  display: none !important;
+}
+.map-section-maritime-takeover:not(.hidden) {
+  display: block;
+}
+.map-section.maritime-takeover .map-container.hidden,
+.map-section.maritime-takeover .map-resize-handle.hidden,
+.map-section.maritime-takeover .map-bottom-grid.hidden {
+  display: none !important;
+}
+.map-section.maritime-takeover .map-dimension-toggle,
+.map-section.maritime-takeover .map-pin-btn {
+  display: none;
+}
+.map-section-maritime-takeover .maritime-situation-iframe-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.map-section-maritime-takeover .maritime-situation-iframe-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* 海域态势感知面板：与 .map-section 一致的默认大小，占满网格整行，替换地图区视觉位置 */
+.panel.panel-maritime-situation {
+  grid-column: 1 / -1;
+  grid-row: span 2;
+  height: 50vh;
+  min-height: 350px;
+  max-height: 90vh;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 5;
+}
+.panel.panel-maritime-situation .panel-content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.panel.panel-maritime-situation .maritime-situation-iframe-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.panel.panel-maritime-situation .maritime-situation-iframe-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
 .map-wrapper {
   width: 100%;
   height: 100%;
@@ -10459,6 +10529,14 @@ a.prediction-link:hover {
 
   /* Full-viewport map on mobile (Google Maps-like experience) */
   .map-section {
+    height: calc(100vh - 48px) !important;
+    height: calc(100dvh - 48px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    min-height: 60vh !important;
+    max-height: 100dvh !important;
+  }
+
+  /* 海域态势感知面板在移动端与 map-section 同高 */
+  .panel.panel-maritime-situation {
     height: calc(100vh - 48px) !important;
     height: calc(100dvh - 48px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
     min-height: 60vh !important;

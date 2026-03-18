@@ -39,6 +39,7 @@ import {
   WorldClockPanel,
   AirlineIntelPanel,
   AviationCommandBar,
+  MaritimeSituationPanel,
 } from "@/components";
 import { SatelliteFiresPanel } from "@/components/SatelliteFiresPanel";
 import { focusInvestmentOnMap } from "@/services/investments-focus";
@@ -51,11 +52,13 @@ import {
   STORAGE_KEYS,
   SITE_VARIANT,
 } from "@/config";
-import { BETA_MODE } from "@/config/beta";
 import { t } from "@/services/i18n";
 import { getCurrentTheme } from "@/utils";
 import { trackCriticalBannerAction } from "@/services/analytics";
 import { getSecretState } from "@/services/runtime-config";
+
+/** 海域态势 iframe 地址：未勾选全球态势时在 map-section 位展示 */
+const MARITIME_IFRAME_URL = "https://db.mk-mda.com/screen";
 
 export interface PanelLayoutCallbacks {
   openCountryStory: (code: string, name: string) => void;
@@ -233,6 +236,7 @@ export class PanelLayoutManager implements AppModule {
             </div>
           </div>
           <div class="map-container" id="mapContainer"></div>
+          <div class="map-section-maritime-takeover hidden" id="mapSectionMaritimePlaceholder" aria-hidden="true"></div>
           ${SITE_VARIANT === "happy" ? '<button class="tv-exit-btn" id="tvExitBtn">Exit TV Mode</button>' : ""}
           <div class="map-resize-handle" id="mapResizeHandle"></div>
           <div class="map-bottom-grid" id="mapBottomGrid"></div>
@@ -367,22 +371,104 @@ export class PanelLayoutManager implements AppModule {
   }
 
   applyPanelSettings(): void {
+    const mapConfig = this.ctx.panelSettings["map"];
+    const maritimeConfig = this.ctx.panelSettings["maritime-situation"];
+    const mapEnabled = mapConfig?.enabled ?? true;
+    const maritimeEnabled = maritimeConfig?.enabled ?? true;
+
+    const mapSection = document.getElementById("mapSection");
+    const mainContent = document.querySelector(".main-content") as HTMLElement | null;
+
+    // 未勾选全球态势且勾选溟坤海域态势：溟坤占据 map-section 位置（同大小、同占比）
+    const maritimeTakesMapSlot =
+      !mapEnabled && maritimeEnabled && !!mapSection;
+
+    if (mapSection) {
+      if (maritimeTakesMapSlot) {
+        mapSection.classList.remove("hidden");
+        mapSection.classList.add("maritime-takeover");
+        if (mainContent) mainContent.classList.remove("map-hidden");
+        const mapContainer = document.getElementById("mapContainer");
+        const resizeHandle = document.getElementById("mapResizeHandle");
+        const bottomGrid = document.getElementById("mapBottomGrid");
+        mapContainer?.classList.add("hidden");
+        resizeHandle?.classList.add("hidden");
+        bottomGrid?.classList.add("hidden");
+        this.ensureMaritimeIframeInPlaceholder();
+        const ph = document.getElementById("mapSectionMaritimePlaceholder");
+        if (ph) {
+          ph.classList.remove("hidden");
+          ph.setAttribute("aria-hidden", "false");
+        }
+        const mapTitle = mapSection.querySelector(".panel-header-left .panel-title");
+        if (mapTitle) mapTitle.textContent = t("panels.maritimeSituation");
+      } else {
+        mapSection.classList.remove("maritime-takeover");
+        if (!mapEnabled && !maritimeEnabled) {
+          mapSection.classList.add("hidden");
+          if (mainContent) mainContent.classList.add("map-hidden");
+        } else {
+          mapSection.classList.toggle("hidden", !mapEnabled);
+          if (mainContent) mainContent.classList.toggle("map-hidden", !mapEnabled);
+        }
+        const mapContainer = document.getElementById("mapContainer");
+        const resizeHandle = document.getElementById("mapResizeHandle");
+        const bottomGrid = document.getElementById("mapBottomGrid");
+        mapContainer?.classList.remove("hidden");
+        resizeHandle?.classList.remove("hidden");
+        bottomGrid?.classList.remove("hidden");
+        const ph = document.getElementById("mapSectionMaritimePlaceholder");
+        if (ph) {
+          ph.classList.add("hidden");
+          ph.setAttribute("aria-hidden", "true");
+        }
+        const mapTitle = mapSection.querySelector(".panel-header-left .panel-title");
+        if (mapTitle) {
+          mapTitle.textContent =
+            SITE_VARIANT === "tech"
+              ? t("panels.techMap")
+              : SITE_VARIANT === "happy"
+                ? "Good News Map"
+                : t("panels.map");
+        }
+      }
+      this.ensureCorrectZones();
+    }
+
     Object.entries(this.ctx.panelSettings).forEach(([key, config]) => {
-      if (key === "map") {
-        const mapSection = document.getElementById("mapSection");
-        if (mapSection) {
-          mapSection.classList.toggle("hidden", !config.enabled);
-          const mainContent = document.querySelector(".main-content");
-          if (mainContent) {
-            mainContent.classList.toggle("map-hidden", !config.enabled);
-          }
-          this.ensureCorrectZones();
+      if (key === "map") return;
+      if (key === "maritime-situation") {
+        const panel = this.ctx.panels[key];
+        if (!panel) return;
+        if (maritimeTakesMapSlot) {
+          (panel.getElement() as HTMLElement).style.display = "none";
+        } else {
+          (panel.getElement() as HTMLElement).style.display = "";
+          panel.toggle(config.enabled);
         }
         return;
       }
       const panel = this.ctx.panels[key];
       panel?.toggle(config.enabled);
     });
+  }
+
+  /** 在 mapSection 占位容器内确保存在海域态势 iframe（未勾选全球态势时用） */
+  private ensureMaritimeIframeInPlaceholder(): void {
+    const ph = document.getElementById("mapSectionMaritimePlaceholder");
+    if (!ph || ph.querySelector("iframe")) return;
+    const wrap = document.createElement("div");
+    wrap.className = "maritime-situation-iframe-wrap";
+    wrap.style.cssText =
+      "position:absolute;inset:0;width:100%;height:100%;min-height:320px;";
+    const iframe = document.createElement("iframe");
+    iframe.src = MARITIME_IFRAME_URL;
+    iframe.title = t("panels.maritimeSituation");
+    iframe.setAttribute("loading", "lazy");
+    iframe.style.cssText =
+      "position:absolute;inset:0;width:100%;height:100%;border:0;display:block;";
+    wrap.appendChild(iframe);
+    ph.appendChild(wrap);
   }
 
   private shouldCreatePanel(key: string): boolean {
@@ -551,6 +637,7 @@ export class PanelLayoutManager implements AppModule {
     }
 
     this.createPanel("cascade", () => new CascadePanel());
+    this.createPanel("maritime-situation", () => new MaritimeSituationPanel());
     this.createPanel("satellite-fires", () => new SatelliteFiresPanel());
 
     if (this.shouldCreatePanel("strategic-risk")) {
@@ -844,6 +931,14 @@ export class PanelLayoutManager implements AppModule {
       if (monitorsIdx !== -1) valid.splice(monitorsIdx, 1);
       if (SITE_VARIANT !== "happy") valid.push("monitors");
       allOrder = valid;
+      const mapEnabled = this.ctx.panelSettings["map"]?.enabled ?? true;
+      if (mapEnabled) {
+        const maritimeIdx = allOrder.indexOf("maritime-situation");
+        if (maritimeIdx > 0) {
+          allOrder.splice(maritimeIdx, 1);
+          allOrder.unshift("maritime-situation");
+        }
+      }
     } else {
       allOrder = [...defaultOrder];
 
@@ -872,6 +967,15 @@ export class PanelLayoutManager implements AppModule {
           allOrder.splice(1, 0, "runtime-config");
         } else if (runtimeIdx === -1) {
           allOrder.splice(1, 0, "runtime-config");
+        }
+      }
+      // 勾选全球态势时，溟坤海域态势排在右侧最上方
+      const mapEnabled = this.ctx.panelSettings["map"]?.enabled ?? true;
+      if (mapEnabled) {
+        const maritimeIdx = allOrder.indexOf("maritime-situation");
+        if (maritimeIdx > 0) {
+          allOrder.splice(maritimeIdx, 1);
+          allOrder.unshift("maritime-situation");
         }
       }
     }
